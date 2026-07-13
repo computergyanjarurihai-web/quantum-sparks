@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#0a0620" />
 <title>Quantum Sparks — Quaitronix</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -129,6 +129,12 @@ body{
 .plan .feat{font-size:13px;color:var(--ink);margin-top:6px}
 .sheet .btn{max-width:320px;margin:0 auto 8px}
 .link{background:none;border:none;color:var(--dim);font-size:13px;cursor:pointer;text-decoration:underline;margin-top:4px}
+.afield{width:100%;max-width:320px;margin:0 auto 10px;font-family:inherit;font-size:14px;color:var(--ink);
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;outline:none;display:block}
+.afield:focus{border-color:var(--violet)}
+.aerr{font-size:12px;color:#ff9a9a;min-height:16px;margin:2px auto 8px;max-width:320px}
+.atoggle{font-size:13px;color:var(--dim);margin-top:10px}
+.atoggle b{color:var(--cyan);cursor:pointer}
 .demo-tag{position:fixed;top:0;left:0;right:0;text-align:center;font-size:10px;letter-spacing:1px;
   background:var(--gold);color:#3a2500;padding:3px;z-index:30;font-weight:600}
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#2a1b4a;border:1px solid var(--line);
@@ -157,7 +163,7 @@ const DEMO_FREE_QUOTA = 5;   // demo mein jaldi limit dikhane ke liye chhota (re
 
 /* ---------- state ---------- */
 const S = { screen:"auth", user:null, token:null, classLevel:null, mode:"easy",
-            used:0, quota:DEMO_FREE_QUOTA, tier:"free", messages:[], busy:false };
+            used:0, quota:DEMO_FREE_QUOTA, tier:"free", messages:[], busy:false, _focusInput:false };
 
 const app = document.getElementById("app");
 const esc = s => (s||"").replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
@@ -185,7 +191,7 @@ function renderAuth(){
      <div class="by">by Quaitronix</div>
      <div class="tag">Class V–X ke liye Hindi-first quantum tutor. Qubie 🔮 aur Bitu 🎲 ke saath seekho!</div>
      <button class="btn primary" onclick="signInGoogle()">Continue with Google</button>
-     <button class="btn ghost" onclick="signInEmail()">Continue with Email</button>
+     <button class="btn ghost" onclick="openEmailAuth()">Continue with Email</button>
      ${CONFIG.DEMO_MODE ? `<button class="btn ghost" onclick="demoStart()">✨ Try Demo (no login)</button>` : ``}
      <div class="legal">Sign in karke tum aage badhte ho. Class V–X ke liye.</div>
    </div>`;
@@ -241,6 +247,7 @@ function renderTutor(){
      </div>
    </div>`;
   const c = document.getElementById("chat"); if(c) c.scrollTop = c.scrollHeight;
+  if(S._focusInput){ const i=document.getElementById("inp"); if(i){ i.focus(); } }
 }
 
 function showPaywall(){
@@ -267,12 +274,15 @@ function toast(msg){ const t=document.createElement("div");t.className="toast";t
 /* ============================================================
    ACTIONS
    ============================================================ */
+function chatKey(){ return "qs_chat_"+(S.user?S.user.id:"demo")+"_"+(S.classLevel||"x"); }
+function saveChat(){ try{ sessionStorage.setItem(chatKey(), JSON.stringify(S.messages.slice(-60))); }catch(e){} }
+function loadChat(){ try{ const r=sessionStorage.getItem(chatKey()); S.messages = r ? JSON.parse(r) : []; }catch(e){ S.messages=[]; } }
 function setMode(m){ S.mode=m; render(); }
 function setClass(n){ S.classLevel=n; render(); }
 async function goTutor(){
   if(!S.classLevel) return;
   if(!CONFIG.DEMO_MODE) await saveClass(S.classLevel);
-  S.screen="tutor"; if(!CONFIG.DEMO_MODE) await refreshQuota(); render();
+  S.screen="tutor"; S._focusInput=false; loadChat(); if(!CONFIG.DEMO_MODE) await refreshQuota(); render();
 }
 function demoStart(){ S.user={id:"demo"}; S.tier="free"; S.quota=DEMO_FREE_QUOTA; S.used=0; S.screen="pick"; render(); }
 
@@ -280,14 +290,15 @@ async function ask(preset){
   const inp = document.getElementById("inp");
   const text = (preset ?? (inp? inp.value : "")).trim();
   if(!text || S.busy) return;
-  S.messages.push({role:"user",text}); S.busy=true; if(inp) inp.value="";
+  S.messages.push({role:"user",text}); S.busy=true; S._focusInput=true; if(inp) inp.value="";
+  saveChat();
   render();
   try{
     if(CONFIG.DEMO_MODE){ await demoAnswer(text); }
     else{ await realAnswer(text); }
   }catch(e){
-    S.messages.push({role:"bot",text:"Kuch gadbad hui — thodi der baad try karo."});
-  }finally{ S.busy=false; render(); }
+    if(!e.noSession) S.messages.push({role:"bot",text:"Kuch gadbad hui — thodi der baad try karo."});
+  }finally{ S.busy=false; saveChat(); render(); }
 }
 
 /* ---------- DEMO logic (no backend) ---------- */
@@ -333,17 +344,71 @@ async function signInGoogle(){
   const sb=await sbClient();
   await sb.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.href}});
 }
-async function signInEmail(){
-  if(CONFIG.DEMO_MODE){ toast("Demo mode on"); return; }
-  const email=prompt("Email daalo:"); if(!email) return;
-  const password=prompt("Password daalo:"); if(!password) return;
-  const sb=await sbClient();
-  const {data,error}=await sb.auth.signInWithPassword({email,password});
-  if(error){ toast("Login fail: "+error.message); return; }
-  S.user=data.user; S.token=data.session.access_token;
-  try{ const me=await api("/me"); S.classLevel=me.class_level||null; S.tier=me.tier; S.quota=me.quota; S.used=me.used; }catch(e){}
-  S.screen = S.classLevel ? "tutor" : "pick";
-  render();
+let _authMode="in"; // "in" = login, "up" = sign-up
+function openEmailAuth(){
+  if(CONFIG.DEMO_MODE){ toast("Demo mode on — 'Try Demo' dabao"); return; }
+  _authMode="in";
+  const el=document.createElement("div");
+  el.className="sheet-bg"; el.id="emailAuth";
+  el.innerHTML=`
+   <div class="sheet">
+     <div class="spark">🔮</div>
+     <h3 id="authTitle">Email se login</h3>
+     <p>Quantum Sparks mein aage badho</p>
+     <input class="afield" id="authEmail" type="email" inputmode="email" autocomplete="email" placeholder="Email" />
+     <input class="afield" id="authPass" type="password" autocomplete="current-password" placeholder="Password (kam se kam 6 akshar)" />
+     <div class="aerr" id="authErr"></div>
+     <button class="btn primary" id="authGo" onclick="submitEmailAuth()">Login</button>
+     <button class="link" onclick="closeEmailAuth()">Cancel</button>
+     <div class="atoggle" id="authToggle">Naya account? <b onclick="toggleAuthMode()">Sign up karo</b></div>
+   </div>`;
+  document.body.appendChild(el);
+  setTimeout(()=>{ const e=document.getElementById("authEmail"); if(e) e.focus(); },50);
+}
+function closeEmailAuth(){ const p=document.getElementById("emailAuth"); if(p) p.remove(); }
+function toggleAuthMode(){
+  _authMode = _authMode==="in" ? "up" : "in";
+  const up = _authMode==="up";
+  document.getElementById("authTitle").textContent = up ? "Naya account banao" : "Email se login";
+  document.getElementById("authGo").textContent    = up ? "Sign up" : "Login";
+  document.getElementById("authPass").setAttribute("autocomplete", up?"new-password":"current-password");
+  document.getElementById("authToggle").innerHTML = up
+    ? `Pehle se account hai? <b onclick="toggleAuthMode()">Login karo</b>`
+    : `Naya account? <b onclick="toggleAuthMode()">Sign up karo</b>`;
+}
+async function submitEmailAuth(){
+  const email=(document.getElementById("authEmail").value||"").trim();
+  const password=document.getElementById("authPass").value||"";
+  const errEl=document.getElementById("authErr");
+  const goBtn=document.getElementById("authGo");
+  errEl.textContent="";
+  if(!email || !password){ errEl.textContent="Email aur password dono zaroori hain."; return; }
+  if(password.length<6){ errEl.textContent="Password kam se kam 6 akshar ka ho."; return; }
+  goBtn.disabled=true; const label=goBtn.textContent; goBtn.textContent="Ruko...";
+  try{
+    const sb=await sbClient();
+    let data, error;
+    if(_authMode==="up"){
+      ({data,error}=await sb.auth.signUp({email,password}));
+      if(error){ errEl.textContent=error.message; return; }
+      if(!data.session){ // email confirmation on
+        closeEmailAuth();
+        toast("Confirmation email bheja gaya — inbox check karo, phir login karo.");
+        return;
+      }
+    } else {
+      ({data,error}=await sb.auth.signInWithPassword({email,password}));
+      if(error){ errEl.textContent=error.message; return; }
+    }
+    S.user=data.user; S.token=data.session.access_token;
+    try{ const me=await api("/me"); S.classLevel=me.class_level||null; S.tier=me.tier; S.quota=me.quota; S.used=me.used; }catch(e){}
+    S.screen = S.classLevel ? "tutor" : "pick";
+    closeEmailAuth(); render();
+  }catch(e){
+    errEl.textContent="Kuch gadbad hui — dobara try karo.";
+  }finally{
+    if(goBtn){ goBtn.disabled=false; goBtn.textContent=label; }
+  }
 }
 async function bootSession(){
   if(CONFIG.DEMO_MODE) return render();
@@ -356,21 +421,27 @@ async function bootSession(){
       S.classLevel = me.class_level || null;
       S.tier=me.tier; S.quota=me.quota; S.used=me.used;
       S.screen = S.classLevel ? "tutor" : "pick";
+      if(S.screen==="tutor") loadChat();
     }
   }catch(e){ /* stay on auth */ }
   render();
 }
 async function api(path, opts={}){
+  if(!S.token){ const e=new Error("no-session"); e.noSession=true; throw e; }
   const r = await fetch(CONFIG.BACKEND_URL+path, {
     ...opts,
     headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+S.token, ...(opts.headers||{}) }
   });
+  if(r.status===401){ S.token=null; S.user=null; S.screen="auth"; render(); toast("Session khatam — dobara login karo."); const e=new Error("401"); e.noSession=true; throw e; }
   if(r.status===402){ const d=await r.json().catch(()=>({})); const e=new Error("limit"); e.paywall=true; e.data=d; throw e; }
   if(!r.ok) throw new Error("HTTP "+r.status);
   return r.json();
 }
 async function saveClass(n){
-  try{ const sb=await sbClient(); await sb.from("profiles").update({class_level:n}).eq("id",S.user.id); }catch(e){}
+  try{
+    const sb=await sbClient();
+    await sb.from("profiles").upsert({id:S.user.id, class_level:n}, {onConflict:"id"});
+  }catch(e){}
 }
 async function refreshQuota(){ try{ const me=await api("/me"); S.tier=me.tier;S.quota=me.quota;S.used=me.used; }catch(e){} }
 async function realAnswer(text){
@@ -384,13 +455,43 @@ async function realAnswer(text){
     throw e;
   }
 }
+function loadRazorpay(){
+  return new Promise((res,rej)=>{
+    if(window.Razorpay) return res();
+    const s=document.createElement("script");
+    s.src="https://checkout.razorpay.com/v1/checkout.js";
+    s.onload=res; s.onerror=()=>rej(new Error("razorpay-load-fail"));
+    document.head.appendChild(s);
+  });
+}
 async function upgrade(){
   if(CONFIG.DEMO_MODE){ closePaywall(); toast("Demo: yahan Razorpay checkout khulega ✨"); return; }
   try{
     const d=await api("/billing/subscribe",{method:"POST"});
-    toast("Razorpay checkout khul raha hai...");
-    // TODO: open Razorpay Checkout with d.subscription_id + d.key_id (add checkout.js)
-  }catch(e){ toast("Abhi payment setup pending hai."); }
+    if(!d || !d.key_id || !d.subscription_id){ toast("Payment setup adhoora hai (key/subscription missing)."); return; }
+    await loadRazorpay();
+    const rzp=new window.Razorpay({
+      key: d.key_id,
+      subscription_id: d.subscription_id,
+      name: "Quantum Sparks",
+      description: CONFIG.PAID_PLAN_NAME+" — "+CONFIG.PAID_QUOTA+" sawal/mahina",
+      prefill: S.user && S.user.email ? { email:S.user.email } : {},
+      theme: { color:"#8b5cf6" },
+      handler: async function(resp){
+        try{
+          await api("/billing/verify",{method:"POST",body:JSON.stringify(resp)});
+        }catch(e){ /* backend webhook bhi confirm kar sakta hai */ }
+        try{ await refreshQuota(); }catch(e){}
+        closePaywall(); render(); toast("Spark+ activate ho gaya! 🎉");
+      },
+      modal:{ ondismiss:function(){ toast("Payment cancel kiya."); } }
+    });
+    rzp.on("payment.failed", function(){ toast("Payment fail hua — dobara try karo."); });
+    rzp.open();
+  }catch(e){
+    if(e.noSession){ return; }
+    toast("Abhi payment setup pending hai.");
+  }
 }
 
 /* boot */
