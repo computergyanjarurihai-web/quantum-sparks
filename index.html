@@ -83,6 +83,9 @@ body{
 .quota{margin-left:auto;text-align:right}
 .quota .num{font-family:'Baloo 2';font-weight:700;font-size:15px;color:var(--gold)}
 .quota .lbl{font-size:9px;color:var(--dim);display:block;line-height:1}
+.signout{flex:none;width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:16px;
+  background:var(--panel);border:1px solid var(--line);color:var(--dim)}
+.signout:active{transform:scale(.94)}
 .modes{display:flex;gap:6px;padding:10px 14px 4px}
 .mode{font-family:'Baloo 2';font-weight:600;font-size:12.5px;padding:6px 13px;border-radius:999px;
   color:var(--dim);background:transparent;border:1px solid var(--line);cursor:pointer}
@@ -232,6 +235,7 @@ function renderTutor(){
      ${miniQubie}
      <div><div class="ttl">Quantum Sparks</div><div class="cls-badge">Class ${roman[S.classLevel]} · Quaitronix</div></div>
      <div class="quota"><span class="num">${Math.max(S.quota-S.used,0)}</span><span class="lbl">sawal bache</span></div>
+     <button class="signout" onclick="signOut()" title="Sign out">⎋</button>
    </div>
    <div class="modes">
      <button class="mode ${S.mode==='easy'?'on':''}" onclick="setMode('easy')">🌱 Aasaan</button>
@@ -297,7 +301,12 @@ async function ask(preset){
     if(CONFIG.DEMO_MODE){ await demoAnswer(text); }
     else{ await realAnswer(text); }
   }catch(e){
-    if(!e.noSession) S.messages.push({role:"bot",text:"Kuch gadbad hui — thodi der baad try karo."});
+    if(!e.noSession){
+      console.error("[ask] error:", e);
+      let reason = e.status ? `Backend error ${e.status}` : (e.message==="Failed to fetch" ? "Backend tak pahuncha hi nahi (CORS ya server soya hua / down)" : e.message);
+      if(e.body) reason += `\n${e.body}`;
+      S.messages.push({role:"bot",text:"⚠️ "+reason});
+    }
   }finally{ S.busy=false; saveChat(); render(); }
 }
 
@@ -410,6 +419,11 @@ async function submitEmailAuth(){
     if(goBtn){ goBtn.disabled=false; goBtn.textContent=label; }
   }
 }
+async function signOut(){
+  try{ const sb=await sbClient(); await sb.auth.signOut(); }catch(e){}
+  S.user=null; S.token=null; S.classLevel=null; S.messages=[]; S.used=0; S.tier="free"; S.screen="auth";
+  render();
+}
 async function bootSession(){
   if(CONFIG.DEMO_MODE) return render();
   try{
@@ -434,7 +448,7 @@ async function api(path, opts={}){
   });
   if(r.status===401){ S.token=null; S.user=null; S.screen="auth"; render(); toast("Session khatam — dobara login karo."); const e=new Error("401"); e.noSession=true; throw e; }
   if(r.status===402){ const d=await r.json().catch(()=>({})); const e=new Error("limit"); e.paywall=true; e.data=d; throw e; }
-  if(!r.ok) throw new Error("HTTP "+r.status);
+  if(!r.ok){ const body=await r.text().catch(()=>""); const e=new Error("HTTP "+r.status); e.status=r.status; e.body=body.slice(0,300); throw e; }
   return r.json();
 }
 async function saveClass(n){
