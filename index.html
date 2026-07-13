@@ -332,13 +332,7 @@ async function signInGoogle(){
   const sb=await sbClient();
   await sb.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.href}});
 }
-async function signInEmail(){
-  if(CONFIG.DEMO_MODE){ toast("Demo mode on — 'Try Demo' dabao"); return; }
-  const email=prompt("Apna email daalo (login link aayega):"); if(!email) return;
-  const sb=await sbClient();
-  const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.href}});
-  toast(error? "Error: "+error.message : "Email bheja gaya — link kholo!");
-}
+
 async function bootSession(){
   if(CONFIG.DEMO_MODE) return render();
   try{
