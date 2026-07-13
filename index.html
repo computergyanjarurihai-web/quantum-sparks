@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0620" />
+<title>Quantum Sparks — Quaitronix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg1:#170d3a;--bg2:#0a0620;--panel:rgba(255,255,255,.055);--line:rgba(255,255,255,.10);
+  --violet:#8b5cf6;--cyan:#22d3ee;--gold:#fbbf24;--ink:#ece9ff;--dim:#a49fce;--green:#4ade80;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{
+  font-family:'Poppins',system-ui,sans-serif;color:var(--ink);
+  background:radial-gradient(120% 90% at 50% -10%, #241356 0%, var(--bg1) 45%, var(--bg2) 100%);
+  background-attachment:fixed;min-height:100dvh;overflow-x:hidden;
+}
+.stars{position:fixed;inset:0;pointer-events:none;opacity:.55;z-index:0;background-image:
+  radial-gradient(1.5px 1.5px at 20% 30%,#fff 50%,transparent),
+  radial-gradient(1.5px 1.5px at 70% 20%,var(--cyan) 50%,transparent),
+  radial-gradient(1.5px 1.5px at 40% 70%,#fff 50%,transparent),
+  radial-gradient(2px 2px at 85% 60%,var(--gold) 50%,transparent),
+  radial-gradient(1.5px 1.5px at 60% 85%,#fff 50%,transparent),
+  radial-gradient(1.5px 1.5px at 12% 80%,var(--violet) 50%,transparent);
+  animation:twinkle 4s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.35}50%{opacity:.75}}
+#app{position:relative;z-index:1;max-width:520px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
+
+/* mascots */
+.qubie{position:relative;border-radius:50%;flex:none;
+  background:radial-gradient(circle at 35% 30%,#7ff0ff,var(--cyan) 40%,var(--violet) 100%);
+  box-shadow:0 0 14px rgba(34,211,238,.6),inset 0 0 10px rgba(255,255,255,.4);
+  display:grid;place-items:center;animation:float 3.5s ease-in-out infinite}
+.qubie .n{position:absolute;font-family:'Baloo 2';font-weight:700;color:rgba(255,255,255,.85);font-size:.42em;animation:sup 2.4s ease-in-out infinite}
+.qubie .n.b{animation-delay:1.2s}
+@keyframes sup{0%,100%{opacity:.15}50%{opacity:.9}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.bitu{position:relative;border-radius:22%;flex:none;background:linear-gradient(135deg,#ffd873,var(--gold));
+  box-shadow:0 0 10px rgba(251,191,36,.45);display:grid;place-items:center}
+.bitu .n{font-family:'Baloo 2';font-weight:700;color:#5a3b00;font-size:.4em}
+.face{position:absolute;top:32%;display:flex;width:46%;justify-content:space-between}
+.eye{width:.11em;height:.11em;border-radius:50%;background:#fff}.eye.d{background:#5a3b00}
+
+/* generic */
+.btn{font-family:'Baloo 2',cursive;font-weight:600;font-size:16px;border:none;border-radius:14px;
+  padding:14px 18px;cursor:pointer;width:100%;transition:.16s;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn.primary{background:linear-gradient(135deg,var(--cyan),var(--violet));color:#150b33}
+.btn.primary:active{transform:scale(.98)}
+.btn.ghost{background:var(--panel);border:1px solid var(--line);color:var(--ink)}
+.hidden{display:none!important}
+
+/* AUTH screen */
+.auth{flex:1;display:flex;flex-direction:column;justify-content:center;padding:28px 24px;text-align:center;gap:8px}
+.logo{display:flex;justify-content:center;gap:16px;margin-bottom:6px}
+.brand{font-family:'Baloo 2',cursive;font-weight:700;font-size:30px;
+  background:linear-gradient(90deg,#fff,#c9b8ff);-webkit-background-clip:text;background-clip:text;color:transparent;margin:8px 0 0}
+.by{font-size:12px;color:var(--dim);letter-spacing:2px;text-transform:uppercase}
+.tag{font-size:14px;color:var(--dim);max-width:320px;margin:10px auto 22px;line-height:1.55}
+.auth .btn{max-width:340px;margin:6px auto 0}
+.legal{font-size:11px;color:var(--dim);margin-top:20px}
+
+/* CLASS picker */
+.pick{flex:1;display:flex;flex-direction:column;justify-content:center;padding:28px 24px;text-align:center}
+.pick h2{font-family:'Baloo 2';font-weight:700;font-size:24px;margin:16px 0 4px}
+.pick p{font-size:14px;color:var(--dim);margin:0 0 24px}
+.classes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:360px;margin:0 auto}
+.cls{font-family:'Baloo 2';font-weight:700;font-size:20px;padding:20px 0;border-radius:16px;cursor:pointer;
+  background:var(--panel);border:1px solid var(--line);color:var(--ink);transition:.16s}
+.cls .lbl{display:block;font-size:11px;font-weight:500;color:var(--dim);margin-top:3px;font-family:'Poppins'}
+.cls:active{transform:scale(.96)}
+.cls.on{background:linear-gradient(135deg,var(--cyan),var(--violet));color:#150b33;border-color:transparent}
+.cls.on .lbl{color:#150b33}
+
+/* TUTOR */
+.top{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);
+  background:rgba(10,6,32,.6);backdrop-filter:blur(8px);position:sticky;top:0;z-index:5}
+.top .ttl{font-family:'Baloo 2';font-weight:700;font-size:16px}
+.top .cls-badge{font-size:11px;color:var(--dim)}
+.quota{margin-left:auto;text-align:right}
+.quota .num{font-family:'Baloo 2';font-weight:700;font-size:15px;color:var(--gold)}
+.quota .lbl{font-size:9px;color:var(--dim);display:block;line-height:1}
+.modes{display:flex;gap:6px;padding:10px 14px 4px}
+.mode{font-family:'Baloo 2';font-weight:600;font-size:12.5px;padding:6px 13px;border-radius:999px;
+  color:var(--dim);background:transparent;border:1px solid var(--line);cursor:pointer}
+.mode.on{color:#150b33;background:linear-gradient(90deg,var(--cyan),var(--violet));border-color:transparent}
+.chat{flex:1;overflow-y:auto;padding:12px 14px 8px;display:flex;flex-direction:column;gap:11px}
+.hello{margin:auto 0;text-align:center;padding:10px}
+.hello h3{font-family:'Baloo 2';font-weight:700;font-size:20px;margin:12px 0 6px}
+.hello p{font-size:13px;color:var(--dim);max-width:300px;margin:0 auto}
+.chips{display:flex;flex-direction:column;gap:8px;margin-top:16px;max-width:330px;margin-inline:auto}
+.chip{text-align:left;font-size:13px;color:var(--ink);cursor:pointer;padding:11px 14px;border-radius:13px;
+  border:1px solid var(--line);background:var(--panel)}
+.chip:active{background:rgba(34,211,238,.1)}
+.row{display:flex;gap:9px;max-width:88%}
+.row.me{align-self:flex-end;flex-direction:row-reverse}
+.bubble{padding:10px 14px;border-radius:15px;font-size:14px;line-height:1.55;white-space:pre-wrap}
+.row.me .bubble{background:linear-gradient(135deg,var(--violet),#6d5bd0);color:#fff;border-bottom-right-radius:5px}
+.row.bot .bubble{background:var(--panel);border:1px solid var(--line);border-bottom-left-radius:5px}
+.src{font-size:10px;color:var(--dim);margin-top:5px}
+.typing{display:flex;gap:4px;padding:3px}
+.typing span{width:7px;height:7px;border-radius:50%;background:var(--cyan);animation:bounce 1s infinite}
+.typing span:nth-child(2){animation-delay:.15s;background:var(--violet)}
+.typing span:nth-child(3){animation-delay:.3s;background:var(--gold)}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-5px);opacity:1}}
+.foot{padding:10px 14px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(10,6,32,.6)}
+.inwrap{display:flex;gap:8px;align-items:flex-end}
+.inp{flex:1;resize:none;max-height:120px;font-family:inherit;font-size:14px;color:var(--ink);
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;outline:none}
+.inp:focus{border-color:var(--violet)}
+.send{flex:none;width:46px;height:46px;border-radius:14px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--cyan),var(--violet));color:#150b33;font-size:20px;font-weight:700}
+.send:disabled{opacity:.4}
+
+/* PAYWALL */
+.sheet-bg{position:fixed;inset:0;background:rgba(5,3,16,.7);backdrop-filter:blur(3px);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:linear-gradient(180deg,#211048,#160c33);border:1px solid var(--line);border-bottom:none;
+  border-radius:22px 22px 0 0;padding:24px 22px calc(24px + env(safe-area-inset-bottom));width:100%;max-width:520px;text-align:center;animation:up .28s ease}
+@keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet .spark{font-size:34px}
+.sheet h3{font-family:'Baloo 2';font-weight:700;font-size:22px;margin:8px 0 4px}
+.sheet p{font-size:14px;color:var(--dim);line-height:1.5;margin:0 auto 16px;max-width:320px}
+.plan{background:var(--panel);border:1px solid var(--violet);border-radius:16px;padding:16px;margin:0 auto 16px;max-width:320px}
+.plan .price{font-family:'Baloo 2';font-weight:700;font-size:26px}
+.plan .price small{font-size:13px;color:var(--dim);font-weight:500}
+.plan .feat{font-size:13px;color:var(--ink);margin-top:6px}
+.sheet .btn{max-width:320px;margin:0 auto 8px}
+.link{background:none;border:none;color:var(--dim);font-size:13px;cursor:pointer;text-decoration:underline;margin-top:4px}
+.demo-tag{position:fixed;top:0;left:0;right:0;text-align:center;font-size:10px;letter-spacing:1px;
+  background:var(--gold);color:#3a2500;padding:3px;z-index:30;font-weight:600}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#2a1b4a;border:1px solid var(--line);
+  color:var(--ink);font-size:13px;padding:10px 16px;border-radius:12px;z-index:25;max-width:90%;text-align:center}
+</style>
+</head>
+<body>
+<div class="stars"></div>
+<div id="demoTag" class="demo-tag hidden">DEMO MODE — backend connect karne ke baad real answers aayenge</div>
+<div id="app"></div>
+
+<script>
+/* ============================================================
+   CONFIG — yahan apni values daalo, phir DEMO_MODE = false karo
+   ============================================================ */
+const CONFIG = {
+  SUPABASE_URL:      "https://jatfttksoigsopvstzfs.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_Zmf5p0FcjTvQjzMbm9UdHQ_Tpma4Exn",
+  BACKEND_URL:       "http://127.0.0.1:8000",   // FastAPI base (backend.py)
+  PAID_PLAN_NAME:    "Spark+",
+  PAID_PRICE_INR:    199,
+  PAID_QUOTA:        750,
+  DEMO_MODE:         false,                      // <-- false karo jab config bhar do
+};
+const DEMO_FREE_QUOTA = 5;   // demo mein jaldi limit dikhane ke liye chhota (real limit backend se)
+
+/* ---------- state ---------- */
+const S = { screen:"auth", user:null, token:null, classLevel:null, mode:"easy",
+            used:0, quota:DEMO_FREE_QUOTA, tier:"free", messages:[], busy:false };
+
+const app = document.getElementById("app");
+const esc = s => (s||"").replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const roman = {5:"V",6:"VI",7:"VII",8:"VIII",9:"IX",10:"X"};
+const mascot = (q=1)=> q
+  ? `<div class="qubie" style="width:${52}px;height:${52}px;font-size:52px"><span class="n">0</span><span class="n b">1</span><div class="face" style="width:24%"><span class="eye"></span><span class="eye"></span></div></div>`
+  : `<div class="bitu" style="width:44px;height:44px;font-size:44px"><span class="n">1</span><div class="face" style="width:24%;top:34%"><span class="eye d"></span><span class="eye d"></span></div></div>`;
+const miniQubie = `<div class="qubie" style="width:30px;height:30px;font-size:30px"><span class="n">0</span><span class="n b">1</span></div>`;
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render(){
+  if (CONFIG.DEMO_MODE) document.getElementById("demoTag").classList.remove("hidden");
+  if (S.screen==="auth")  return renderAuth();
+  if (S.screen==="pick")  return renderPick();
+  if (S.screen==="tutor") return renderTutor();
+}
+
+function renderAuth(){
+  app.innerHTML = `
+   <div class="auth">
+     <div class="logo">${mascot(1)}${mascot(0)}</div>
+     <div class="brand">Quantum Sparks</div>
+     <div class="by">by Quaitronix</div>
+     <div class="tag">Class V–X ke liye Hindi-first quantum tutor. Qubie 🔮 aur Bitu 🎲 ke saath seekho!</div>
+     <button class="btn primary" onclick="signInGoogle()">Continue with Google</button>
+     <button class="btn ghost" onclick="signInEmail()">Continue with Email</button>
+     ${CONFIG.DEMO_MODE ? `<button class="btn ghost" onclick="demoStart()">✨ Try Demo (no login)</button>` : ``}
+     <div class="legal">Sign in karke tum aage badhte ho. Class V–X ke liye.</div>
+   </div>`;
+}
+
+function renderPick(){
+  const cells = [5,6,7,8,9,10].map(n=>`
+    <button class="cls ${S.classLevel===n?'on':''}" onclick="setClass(${n})">
+      ${roman[n]}<span class="lbl">Class ${n}</span></button>`).join("");
+  app.innerHTML = `
+   <div class="pick">
+     <div class="logo">${mascot(1)}</div>
+     <h2>Apni class chuno</h2>
+     <p>Tutor tumhari class ke hisaab se padhayega</p>
+     <div class="classes">${cells}</div>
+     <button class="btn primary" style="max-width:340px;margin:26px auto 0" ${S.classLevel?'':'disabled'} onclick="goTutor()">Shuru karo →</button>
+   </div>`;
+}
+
+function renderTutor(){
+  const empty = S.messages.length===0;
+  const chips = ["Qubit aur bit mein farak?","Superposition kya hai?","Entanglement samjhao","Quantum computer tez kyun?"];
+  const body = empty ? `
+     <div class="hello">${mascot(1)}
+       <h3>Namaste! 👋</h3>
+       <p>Koi bhi quantum sawal poochho — Qubie aur Bitu milke samjhayenge.</p>
+       <div class="chips">${chips.map(c=>`<button class="chip" onclick="ask('${c.replace(/'/g,"\\'")}')">${c}</button>`).join("")}</div>
+     </div>`
+    : S.messages.map(m=>`
+       <div class="row ${m.role==='user'?'me':'bot'}">
+         ${m.role==='bot'?`<div style="flex:none">${miniQubie}</div>`:''}
+         <div class="bubble">${esc(m.text)}${m.src?`<div class="src">📘 ${esc(m.src)}</div>`:''}</div>
+       </div>`).join("")
+    + (S.busy?`<div class="row bot"><div style="flex:none">${miniQubie}</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>`:'');
+
+  app.innerHTML = `
+   <div class="top">
+     ${miniQubie}
+     <div><div class="ttl">Quantum Sparks</div><div class="cls-badge">Class ${roman[S.classLevel]} · Quaitronix</div></div>
+     <div class="quota"><span class="num">${Math.max(S.quota-S.used,0)}</span><span class="lbl">sawal bache</span></div>
+   </div>
+   <div class="modes">
+     <button class="mode ${S.mode==='easy'?'on':''}" onclick="setMode('easy')">🌱 Aasaan</button>
+     <button class="mode ${S.mode==='full'?'on':''}" onclick="setMode('full')">🔬 Poora</button>
+   </div>
+   <div class="chat" id="chat">${body}</div>
+   <div class="foot">
+     <div class="inwrap">
+       <textarea class="inp" id="inp" rows="1" placeholder="Yahan apna sawal likho..."
+         oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+         onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ask()}"></textarea>
+       <button class="send" onclick="ask()" ${S.busy?'disabled':''}>➜</button>
+     </div>
+   </div>`;
+  const c = document.getElementById("chat"); if(c) c.scrollTop = c.scrollHeight;
+}
+
+function showPaywall(){
+  const el = document.createElement("div");
+  el.className="sheet-bg"; el.id="paywall";
+  el.innerHTML = `
+   <div class="sheet">
+     <div class="spark">✨</div>
+     <h3>Free limit poori ho gayi!</h3>
+     <p>Is mahine ke free sawal khatam. Agle mahine phir milenge — ya abhi ${CONFIG.PAID_PLAN_NAME} le lo.</p>
+     <div class="plan">
+       <div class="price">₹${CONFIG.PAID_PRICE_INR}<small> / month</small></div>
+       <div class="feat">🎯 Har mahine ${CONFIG.PAID_QUOTA} sawal</div>
+       <div class="feat">🔮 Qubie & Bitu unlimited madad</div>
+     </div>
+     <button class="btn primary" onclick="upgrade()">${CONFIG.PAID_PLAN_NAME} lein →</button>
+     <button class="link" onclick="closePaywall()">Abhi nahi</button>
+   </div>`;
+  document.body.appendChild(el);
+}
+function closePaywall(){ const p=document.getElementById("paywall"); if(p) p.remove(); }
+function toast(msg){ const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2600); }
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+function setMode(m){ S.mode=m; render(); }
+function setClass(n){ S.classLevel=n; render(); }
+async function goTutor(){
+  if(!S.classLevel) return;
+  if(!CONFIG.DEMO_MODE) await saveClass(S.classLevel);
+  S.screen="tutor"; if(!CONFIG.DEMO_MODE) await refreshQuota(); render();
+}
+function demoStart(){ S.user={id:"demo"}; S.tier="free"; S.quota=DEMO_FREE_QUOTA; S.used=0; S.screen="pick"; render(); }
+
+async function signInEmail(){
+  if(CONFIG.DEMO_MODE){ toast("Demo mode on — 'Try Demo' dabao"); return; }
+  const email=prompt("Email daalo:"); if(!email) return;
+  const password=prompt("Password daalo:"); if(!password) return;
+  const sb=await sbClient();
+  const {data,error}=await sb.auth.signInWithPassword({email,password});
+  if(error){ toast("Login fail: "+error.message); return; }
+  S.user=data.user; S.token=data.session.access_token;
+  try{ const me=await api("/me"); S.classLevel=me.class_level||null; S.tier=me.tier; S.quota=me.quota; S.used=me.used; }catch(e){}
+  S.screen = S.classLevel ? "tutor" : "pick";
+  render();
+}
+
+/* ---------- DEMO logic (no backend) ---------- */
+function demoAnswer(text){
+  return new Promise(res=>{
+    setTimeout(()=>{
+      if(S.used >= S.quota){ S.busy=false; render(); showPaywall(); return res(); }
+      S.used++;
+      const t = text.toLowerCase();
+      let a, src="Class "+roman[S.classLevel]+" · demo";
+      if(t.includes("bit")||t.includes("qubit"))
+        a="Bitu 🎲 hamesha ya toh 0 hota hai ya 1 — ek time par ek hi. Par Qubie 🔮 (qubit) ek saath 0 aur 1 dono ho sakta hai — ise superposition kehte hain! Isi liye quantum computer ek saath kai possibilities try kar leta hai.\n\nSocho zara: agar ek sikka hawa mein ghoom raha ho, toh woh heads bhi hai aur tails bhi — jab tak girke ruk na jaye. 🪙";
+      else if(t.includes("superposition"))
+        a="Superposition matlab Qubie 🔮 ek saath kai states mein ho sakta hai — 0 aur 1 dono. Jab tak hum 'measure' nahi karte, woh dono possibilities apne andar rakhta hai.\n\nSocho zara: gaane ki playlist shuffle par ho — abhi tak koi ek gaana 'fix' nahi hua, sab possible hain! 🎵";
+      else if(t.includes("entangle"))
+        a="Entanglement mein do qubits aise jud jaate hain ki ek ko dekhte hi doosre ka pata chal jaata hai — chahe woh kitni bhi door ho! Qubie ke do dost aapas mein aise connected hain ki ek muskuraaye toh doosra bhi. 🔗\n\nSocho zara: do jaadui pase jo hamesha same number dikhate hain, alag-alag shehron mein bhi!";
+      else
+        a="Achha sawal! 🔮 (Yeh demo answer hai.) Asli app mein Qubie tumhari Class "+roman[S.classLevel]+" textbook se poora grounded jawab dega — wahi notation, wahi Hindi wording.\n\nSocho zara: aur kya jaanna chahoge is topic mein?";
+      S.messages.push({role:"bot",text:a,src});
+      res();
+    }, 650);
+  });
+}
+
+/* ---------- REAL backend logic ---------- */
+let _sb=null;
+function loadSupabase(){
+  return new Promise((res,rej)=>{
+    if(window.supabase){ return res(); }
+    const s=document.createElement("script");
+    s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+    s.onload=res; s.onerror=rej; document.head.appendChild(s);
+  });
+}
+async function sbClient(){
+  if(_sb) return _sb;
+  await loadSupabase();
+  _sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+  return _sb;
+}
+async function signInGoogle(){
+  if(CONFIG.DEMO_MODE){ toast("Demo mode on — 'Try Demo' dabao"); return; }
+  const sb=await sbClient();
+  await sb.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.href}});
+}
+async function signInEmail(){
+  if(CONFIG.DEMO_MODE){ toast("Demo mode on — 'Try Demo' dabao"); return; }
+  const email=prompt("Apna email daalo (login link aayega):"); if(!email) return;
+  const sb=await sbClient();
+  const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.href}});
+  toast(error? "Error: "+error.message : "Email bheja gaya — link kholo!");
+}
+async function bootSession(){
+  if(CONFIG.DEMO_MODE) return render();
+  try{
+    const sb=await sbClient();
+    const {data}=await sb.auth.getSession();
+    if(data.session){
+      S.user=data.session.user; S.token=data.session.access_token;
+      const me=await api("/me"); 
+      S.classLevel = me.class_level || null;
+      S.tier=me.tier; S.quota=me.quota; S.used=me.used;
+      S.screen = S.classLevel ? "tutor" : "pick";
+    }
+  }catch(e){ /* stay on auth */ }
+  render();
+}
+async function api(path, opts={}){
+  const r = await fetch(CONFIG.BACKEND_URL+path, {
+    ...opts,
+    headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+S.token, ...(opts.headers||{}) }
+  });
+  if(r.status===402){ const d=await r.json().catch(()=>({})); const e=new Error("limit"); e.paywall=true; e.data=d; throw e; }
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  return r.json();
+}
+async function saveClass(n){
+  try{ const sb=await sbClient(); await sb.from("profiles").update({class_level:n}).eq("id",S.user.id); }catch(e){}
+}
+async function refreshQuota(){ try{ const me=await api("/me"); S.tier=me.tier;S.quota=me.quota;S.used=me.used; }catch(e){} }
+async function realAnswer(text){
+  try{
+    const d = await api("/ask",{method:"POST",body:JSON.stringify({question:text,mode:S.mode})});
+    const src = d.sources && d.sources[0] ? `Class ${d.sources[0].class} · Ch ${d.sources[0].chapter} — ${d.sources[0].title}` : "";
+    S.messages.push({role:"bot",text:d.answer,src});
+    if(d.usage){ S.used=d.usage.used; S.quota=d.usage.quota; S.tier=d.usage.tier; }
+  }catch(e){
+    if(e.paywall){ S.busy=false; render(); showPaywall(); return; }
+    throw e;
+  }
+}
+async function upgrade(){
+  if(CONFIG.DEMO_MODE){ closePaywall(); toast("Demo: yahan Razorpay checkout khulega ✨"); return; }
+  try{
+    const d=await api("/billing/subscribe",{method:"POST"});
+    toast("Razorpay checkout khul raha hai...");
+    // TODO: open Razorpay Checkout with d.subscription_id + d.key_id (add checkout.js)
+  }catch(e){ toast("Abhi payment setup pending hai."); }
+}
+
+/* boot */
+bootSession();
+</script>
+</body>
+</html>
