@@ -147,11 +147,11 @@ body{
 const CONFIG = {
   SUPABASE_URL:      "https://jatfttksoigsopvstzfs.supabase.co",
   SUPABASE_ANON_KEY: "sb_publishable_Zmf5p0FcjTvQjzMbm9UdHQ_Tpma4Exn",
-  BACKEND_URL:       "https://quantum-sparks-backend.onrender.com",   // FastAPI base (backend.py)
+  BACKEND_URL:       "https://quantum-sparks-backend.onrender.com",   // FastAPI base
   PAID_PLAN_NAME:    "Spark+",
   PAID_PRICE_INR:    199,
   PAID_QUOTA:        750,
-  DEMO_MODE:         false,                      // <-- false karo jab config bhar do
+  DEMO_MODE:         false,                     // real mode ON
 };
 const DEMO_FREE_QUOTA = 5;   // demo mein jaldi limit dikhane ke liye chhota (real limit backend se)
 
@@ -276,17 +276,18 @@ async function goTutor(){
 }
 function demoStart(){ S.user={id:"demo"}; S.tier="free"; S.quota=DEMO_FREE_QUOTA; S.used=0; S.screen="pick"; render(); }
 
-async function signInEmail(){
-  if(CONFIG.DEMO_MODE){ toast("Demo mode on — 'Try Demo' dabao"); return; }
-  const email=prompt("Email daalo:"); if(!email) return;
-  const password=prompt("Password daalo:"); if(!password) return;
-  const sb=await sbClient();
-  const {data,error}=await sb.auth.signInWithPassword({email,password});
-  if(error){ toast("Login fail: "+error.message); return; }
-  S.user=data.user; S.token=data.session.access_token;
-  try{ const me=await api("/me"); S.classLevel=me.class_level||null; S.tier=me.tier; S.quota=me.quota; S.used=me.used; }catch(e){}
-  S.screen = S.classLevel ? "tutor" : "pick";
+async function ask(preset){
+  const inp = document.getElementById("inp");
+  const text = (preset ?? (inp? inp.value : "")).trim();
+  if(!text || S.busy) return;
+  S.messages.push({role:"user",text}); S.busy=true; if(inp) inp.value="";
   render();
+  try{
+    if(CONFIG.DEMO_MODE){ await demoAnswer(text); }
+    else{ await realAnswer(text); }
+  }catch(e){
+    S.messages.push({role:"bot",text:"Kuch gadbad hui — thodi der baad try karo."});
+  }finally{ S.busy=false; render(); }
 }
 
 /* ---------- DEMO logic (no backend) ---------- */
@@ -332,7 +333,18 @@ async function signInGoogle(){
   const sb=await sbClient();
   await sb.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.href}});
 }
-
+async function signInEmail(){
+  if(CONFIG.DEMO_MODE){ toast("Demo mode on"); return; }
+  const email=prompt("Email daalo:"); if(!email) return;
+  const password=prompt("Password daalo:"); if(!password) return;
+  const sb=await sbClient();
+  const {data,error}=await sb.auth.signInWithPassword({email,password});
+  if(error){ toast("Login fail: "+error.message); return; }
+  S.user=data.user; S.token=data.session.access_token;
+  try{ const me=await api("/me"); S.classLevel=me.class_level||null; S.tier=me.tier; S.quota=me.quota; S.used=me.used; }catch(e){}
+  S.screen = S.classLevel ? "tutor" : "pick";
+  render();
+}
 async function bootSession(){
   if(CONFIG.DEMO_MODE) return render();
   try{
